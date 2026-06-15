@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecot Dummy ERP - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            display: none;
+        }
+
+        .login-container.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .login-container p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #5568d3;
+        }
+
+        .login-error {
+            color: #d32f2f;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .app-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 1400px;
+            display: none;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .app-container.show {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-header h1 {
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .app-main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f5f5f5;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 15px 20px;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            font-weight: 500;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .nav-item:hover {
+            background: #e8e8e8;
+        }
+
+        .nav-item.active {
+            background: #e3f2fd;
+            border-left-color: #667eea;
+            color: #667eea;
+        }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .module-section {
+            display: none;
+        }
+
+        .module-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .module-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 25px;
+            font-weight: 600;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #ddd;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.overdue {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .badge.paid {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .badge.missing {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .detail-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .detail-btn:hover {
+            background: #5568d3;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .detail-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .modal-close {
+            background: #f0f0f0;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+        }
+
+        .log-entry {
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .log-timestamp {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .log-message {
+            color: #555;
+        }
+
+        .mail-draft {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .mail-header {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+
+        .mail-header div {
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .mail-header strong {
+            color: #667eea;
+            display: inline-block;
+            width: 80px;
+        }
+
+        .mail-body {
+            color: #555;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div class="login-container show" id="loginContainer">
+        <h1>Lecot ERP Demo</h1>
+        <p>Azure AI Foundry - Computer Use Demo</p>
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label for="username">Gebruikersnaam</label>
+                <input type="text" id="username" placeholder="Bijv. ai-demo-agent" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Wachtwoord</label>
+                <input type="password" id="password" placeholder="Wachtwoord" required>
+            </div>
+            <button type="submit" class="login-btn">Aanmelden</button>
+            <div class="login-error" id="loginError"></div>
+        </form>
+    </div>
+
+    <!-- App Container -->
+    <div class="app-container" id="appContainer">
+        <div class="app-header">
+            <h1>Lecot ERP - Demo Environment</h1>
+            <div class="user-info">
+                <span>Gebruiker: <strong id="currentUser"></strong></span>
+                <button class="logout-btn" onclick="handleLogout()">Afmelden</button>
+            </div>
+        </div>
+
+        <div class="app-main">
+            <div class="sidebar">
+                <div class="nav-item active" onclick="switchModule('customers')">👥 Klanten</div>
+                <div class="nav-item" onclick="switchModule('invoices')">📄 Facturen</div>
+                <div class="nav-item" onclick="switchModule('activity')">📋 Activity Log</div>
+            </div>
+
+            <div class="content">
+                <!-- Customers Module -->
+                <div class="module-section active" id="customersModule">
+                    <div class="module-title">Klanten</div>
+                    <div class="table-container">
+                        <table id="customersTable">
+                            <thead>
+                                <tr>
+                                    <th>Klantnaam</th>
+                                    <th>Status</th>
+                                    <th>Openstaand bedrag</th>
+                                    <th>Contact</th>
+                                    <th>Actie</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Invoices Module -->
+                <div class="module-section" id="invoicesModule">
+                    <div class="module-title">Facturen</div>
+                    <div class="table-container">
+                        <table id="invoicesTable">
+                            <thead>
+                                <tr>
+                                    <th>Factuurnummer</th>
+                                    <th>Klant</th>
+                                    <th>Bedrag</th>
+                                    <th>Datum</th>
+                                    <th>Status</th>
+                                    <th>Actie</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Activity Log Module -->
+                <div class="module-section" id="activityModule">
+                    <div class="module-title">Activity Log</div>
+                    <div id="activityContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle"></div>
+            <div id="modalBody"></div>
+            <button class="modal-close" onclick="closeModal()">Sluiten</button>
+        </div>
+    </div>
+
+    <script>
+        // Dummy Data
+        const dummyData = {
+            customers: [
+                {
+                    id: 'C001',
+                    name: 'Van Damme Tools',
+                    status: 'Overdue',
+                    amount: 4500,
+                    email: 'info@vandammetools.local',
+                    contact: 'Jan van Damme',
+                    phone: '03 123 45 67'
+                },
+                {
+                    id: 'C002',
+                    name: 'Bouwcenter Nova',
+                    status: 'Paid',
+                    amount: 0,
+                    email: 'contact@bouwcenterova.local',
+                    contact: 'Maria Novy',
+                    phone: '02 234 56 78'
+                },
+                {
+                    id: 'C003',
+                    name: 'FixPro Services',
+                    status: 'Missing PO',
+                    amount: 2250,
+                    email: 'orders@fixpro.local',
+                    contact: 'Peter Fix',
+                    phone: '04 345 67 89'
+                },
+                {
+                    id: 'C004',
+                    name: 'TechDive Consulting',
+                    status: 'Paid',
+                    amount: 0,
+                    email: 'finance@techdive.local',
+                    contact: 'Anna Dive',
+                    phone: '02 456 78 90'
+                },
+                {
+                    id: 'C005',
+                    name: 'Logistics Plus',
+                    status: 'Overdue',
+                    amount: 3200,
+                    email: 'ap@logisticsplus.local',
+                    contact: 'Tom Plus',
+                    phone: '03 567 89 01'
+                }
+            ],
+            invoices: [
+                { id: 'INV-001', customer: 'C001', number: 'FAC-2024-501', amount: 4500, date: '2024-05-15', status: 'Overdue', po: 'PO-2024-101' },
+                { id: 'INV-002', customer: 'C002', number: 'FAC-2024-502', amount: 8900, date: '2024-04-20', status: 'Paid', po: 'PO-2024-102' },
+                { id: 'INV-003', customer: 'C003', number: 'FAC-2024-503', amount: 2250, date: '2024-05-25', status: 'Overdue', po: null },
+                { id: 'INV-004', customer: 'C004', number: 'FAC-2024-504', amount: 5600, date: '2024-03-15', status: 'Paid', po: 'PO-2024-104' },
+                { id: 'INV-005', customer: 'C001', number: 'FAC-2024-505', amount: 3200, date: '2024-05-30', status: 'Overdue', po: 'PO-2024-105' },
+                { id: 'INV-006', customer: 'C005', number: 'FAC-2024-506', amount: 3200, date: '2024-05-20', status: 'Overdue', po: 'PO-2024-106' }
+            ],
+            activity: []
+        };
+
+        // Login Handler
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === 'ai-demo-agent' && password === 'demo123') {
+                document.getElementById('loginContainer').classList.remove('show');
+                document.getElementById('appContainer').classList.add('show');
+                document.getElementById('currentUser').textContent = username;
+                logActivity(`Gebruiker ${username} ingelogd`, 'Login');
+                renderCustomers();
+            } else {
+                document.getElementById('loginError').textContent = 'Ongeldige inloggegevens';
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        function handleLogout() {
+            logActivity(document.getElementById('currentUser').textContent + ' uitgelogd', 'Logout');
+            document.getElementById('appContainer').classList.remove('show');
+            document.getElementById('loginContainer').classList.add('show');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('loginError').style.display = 'none';
+        }
+
+        // Module Switching
+        function switchModule(moduleName) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.classList.add('active');
+
+            document.querySelectorAll('.module-section').forEach(section => section.classList.remove('active'));
+            document.getElementById(moduleName + 'Module').classList.add('active');
+
+            if (moduleName === 'customers') renderCustomers();
+            else if (moduleName === 'invoices') renderInvoices();
+            else if (moduleName === 'activity') renderActivity();
+        }
+
+        // Render Customers
+        function renderCustomers() {
+            const tbody = document.querySelector('#customersTable tbody');
+            tbody.innerHTML = dummyData.customers.map(customer => {
+                const statusClass = customer.status === 'Overdue' ? 'overdue' : customer.status === 'Paid' ? 'paid' : 'missing';
+                return `
+                    <tr>
+                        <td>${customer.name}</td>
+                        <td><span class="badge ${statusClass}">${customer.status}</span></td>
+                        <td>€${customer.amount.toLocaleString('nl-NL')}</td>
+                        <td>${customer.contact}</td>
+                        <td><button class="detail-btn" onclick="showCustomerDetail('${customer.id}')">Details</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Invoices
+        function renderInvoices() {
+            const tbody = document.querySelector('#invoicesTable tbody');
+            tbody.innerHTML = dummyData.invoices.map(invoice => {
+                const customer = dummyData.customers.find(c => c.id === invoice.customer);
+                const statusClass = invoice.status === 'Overdue' ? 'overdue' : 'paid';
+                return `
+                    <tr>
+                        <td>${invoice.number}</td>
+                        <td>${customer.name}</td>
+                        <td>€${invoice.amount.toLocaleString('nl-NL')}</td>
+                        <td>${new Date(invoice.date).toLocaleDateString('nl-NL')}</td>
+                        <td><span class="badge ${statusClass}">${invoice.status}</span></td>
+                        <td><button class="detail-btn" onclick="showInvoiceDetail('${invoice.id}')">Details</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Mails
+        function renderMails() {
+            const container = document.getElementById('mailContainer');
+            if (dummyData.mails.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Geen mail drafts</p></div>';
+                return;
+            }
+            container.innerHTML = dummyData.mails.map((mail, idx) => `
+                <div class="mail-draft">
+                    <div class="mail-header">
+                        <div><strong>Van:</strong> system@lecot-demo.local</div>
+                        <div><strong>Naar:</strong> ${mail.to}</div>
+                        <div><strong>Onderwerp:</strong> ${mail.subject}</div>
+                        <div><strong>Opgesteld:</strong> ${new Date(mail.timestamp).toLocaleString('nl-NL')}</div>
+                    </div>
+                    <div class="mail-body">${mail.body}</div>
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd; display: flex; gap: 10px;">
+                        <button onclick="sendMailDraft(${idx})" style="background: #388e3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Verzenden</button>
+                        <button onclick="deleteMailDraft(${idx})" style="background: #d32f2f; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600;">Verwijderen</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Activity Log
+        function renderActivity() {
+            const container = document.getElementById('activityContainer');
+            if (dummyData.activity.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Geen activiteiten geregistreerd</p></div>';
+                return;
+            }
+            container.innerHTML = dummyData.activity.map(entry => `
+                <div class="log-entry">
+                    <div class="log-timestamp">${new Date(entry.timestamp).toLocaleString('nl-NL')}</div>
+                    <div class="log-message"><strong>${entry.action}:</strong> ${entry.message}</div>
+                </div>
+            `).join('');
+        }
+
+        // Detail Views
+        function showCustomerDetail(customerId) {
+            const customer = dummyData.customers.find(c => c.id === customerId);
+            const invoices = dummyData.invoices.filter(inv => inv.customer === customerId);
+
+            document.getElementById('modalTitle').textContent = customer.name;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Klant ID:</div>
+                    <div class="detail-value">${customer.id}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value"><span class="badge ${customer.status === 'Overdue' ? 'overdue' : customer.status === 'Paid' ? 'paid' : 'missing'}">${customer.status}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Contactpersoon:</div>
+                    <div class="detail-value">${customer.contact}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Email:</div>
+                    <div class="detail-value">${customer.email}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Telefoon:</div>
+                    <div class="detail-value">${customer.phone}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Openstaand:</div>
+                    <div class="detail-value">€${customer.amount.toLocaleString('nl-NL')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Facturen:</div>
+                    <div class="detail-value">${invoices.length} (${invoices.filter(i => i.status === 'Overdue').length} overdue)</div>
+                </div>
+            `;
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function showInvoiceDetail(invoiceId) {
+            const invoice = dummyData.invoices.find(inv => inv.id === invoiceId);
+            const customer = dummyData.customers.find(c => c.id === invoice.customer);
+
+            document.getElementById('modalTitle').textContent = invoice.number;
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Factuurnummer:</div>
+                    <div class="detail-value">${invoice.number}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Klant:</div>
+                    <div class="detail-value">${customer.name}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Bedrag:</div>
+                    <div class="detail-value">€${invoice.amount.toLocaleString('nl-NL')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Factuurdatum:</div>
+                    <div class="detail-value">${new Date(invoice.date).toLocaleDateString('nl-NL')}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Status:</div>
+                    <div class="detail-value"><span class="badge ${invoice.status === 'Overdue' ? 'overdue' : 'paid'}">${invoice.status}</span></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">PO Nummer:</div>
+                    <div class="detail-value">${invoice.po || 'GEEN'}</div>
+                </div>
+            `;
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+        }
+
+        // Internal logging only
+        function logActivity(message, action = 'System') {
+            dummyData.activity.unshift({
+                timestamp: new Date(),
+                action: action,
+                message: message
+            });
+        }
+    </script>
+</body>
+</html>
